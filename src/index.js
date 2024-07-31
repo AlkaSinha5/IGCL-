@@ -1,6 +1,9 @@
 const express = require('express');
 const app = express();
 const cors = require("cors");
+const cron = require("node-cron");
+const axios = require("axios")
+
 // require('dotenv').config();
 // const fileUpload = require("express-fileupload"); 
 const path = require('path');
@@ -28,6 +31,14 @@ app.use("/v1", allRouters);
 // app.get('/', (req, res) => {
 //     res.send('Welcome to the Express server!');
 // });
+cron.schedule('*/15 * * * *', async () => {
+    try {
+      const response = await axios.get('https://igcl.onrender.com/v1/dummy/getDummy');
+      console.log("API call successful:", response.data);
+    } catch (error) {
+      console.error("Error making API call:", error.message);
+    }
+  });
 
 const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
