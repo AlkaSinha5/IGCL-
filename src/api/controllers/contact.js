@@ -1,22 +1,41 @@
 const constants = require("../../helper/constants");
+const sendEmail = require("../../helper/sendMail");
 const Contact = require("../../models/contact");
-
 
 exports.addContact = async (req, res) => {
   try {
-    
-    // req.body.CreatedBy = req.user._id;
-    // req.body.UpdatedBy = req.user._id;
-    const contact = await Contact.create(req.body);
+    const { Name, Email, Message, ...contactData } = req.body;
+    const AdminEmail = "sinhaalka802211@gmail.com";
+    const UserMessage = `Dear ${Name},\n\nThanks for your query. We have received it and will get back to you shortly.\n\nBest regards,\nIGCL Team`;
+    const AdminMessage = `New contact message from IGCL:\n\nName: ${Name}\nEmail: ${Email}\nMessage: ${Message}`;
+
+    // Create contact in the database
+    const contact = await Contact.create({ Name, Email, Message, ...contactData });
+
+    // Send emails in parallel
+    const emailPromises = [
+      sendEmail(Email, "Your Query Raised", UserMessage),
+      sendEmail(AdminEmail, "Contact Mail From IGCL", AdminMessage)
+    ];
+
+    // Wait for email sending promises to resolve
+    await Promise.all(emailPromises);
+
+    // Return success response
     return res
       .status(constants.status_code.header.ok)
       .send({ message: constants.curd.add, success: true });
+
   } catch (error) {
+    console.error('Error in addContact:', error);
+
+    // Return error response
     return res
       .status(constants.status_code.header.server_error)
       .send({ error: error.message, success: false });
   }
 };
+
 
 exports.getAllContact= async (req, res) => {
   try {
