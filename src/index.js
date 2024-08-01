@@ -5,7 +5,7 @@ const cron = require("node-cron");
 const axios = require("axios")
 
 // require('dotenv').config();
-// const fileUpload = require("express-fileupload"); 
+const fileUpload = require("express-fileupload"); 
 const path = require('path');
 const { connectDB } = require('./db/db');
 const allRouters = require('./api/routers/routeIndex');
@@ -16,9 +16,9 @@ connectDB().catch(err => {
     process.exit(1);
 });
 
-// app.use(fileUpload({
-//     useTempFiles: true
-// }));
+app.use(fileUpload({
+    useTempFiles: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
