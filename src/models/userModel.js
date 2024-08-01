@@ -12,8 +12,6 @@ const userSchema = mongoose.Schema({
     },
     Mobile: {
         type: String,
-        required: true,
-        unique:true,
     },
     CreatedDate: {
         type: Date,
@@ -22,6 +20,9 @@ const userSchema = mongoose.Schema({
     UpdatedDate: {
         type: Date,
         default: Date.now()
+    },
+    Password:{
+        type:String
     },
     IsDeleted: {
         type: Boolean,
