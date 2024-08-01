@@ -6,34 +6,41 @@ const config = require('../../helper/config')
 const jwt =require ('jsonwebtoken');
 
 
-// Register an user
+
 exports.register = async (req, res) => {
-    try {
-      const {  Password: Password, ...restBody } = req.body;
- 
-  
-      // Hash the password
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(Password, saltRounds);
-  
-      // // Create new user with hashed password and roles
-      // const user = new User({ ...restBody, Password: hashedPassword, Roles: [roleId._id] });
-      const user = new User({ ...restBody, Password: Password });
-      // Save user to the database
-      await user.save();
-  
-      return res.status(constants.status_code.header.ok).send({
-        message: constants.auth.register_success,
-        success: true
-      });
-    } catch (error) {
-      console.error('Error registering user:', error);
-      return res.status(constants.status_code.header.server_error).send({
-        error: errorResponse(error),
+  try {
+    const { Password, ...restBody } = req.body;
+
+    if (!Password) {
+      return res.status(constants.status_code.header.bad_request).send({
+        error: "Password is required",
         success: false
       });
     }
-  };
+
+    // Hash the password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(Password, saltRounds);
+
+    // Create new user with hashed password
+    const user = new User({ ...restBody, Password: hashedPassword });
+
+    // Save user to the database
+    await user.save();
+
+    return res.status(constants.status_code.header.ok).send({
+      message: constants.auth.register_success,
+      success: true
+    });
+  } catch (error) {
+    console.error('Error registering user:', error);
+    return res.status(constants.status_code.header.server_error).send({
+      error: errorResponse(error),
+      success: false
+    });
+  }
+};
+
 
 
 exports.login = async (req, res) => {
@@ -48,7 +55,7 @@ exports.login = async (req, res) => {
     }
 
     // Find user by EmailId
-    const user = await User.findOne({ EmailId }).populate('Roles');
+    const user = await User.findOne({ EmailId });
 
     // Check if user exists and validate password
      if (!user || !(await bcrypt.compare(Password, user.Password))) {

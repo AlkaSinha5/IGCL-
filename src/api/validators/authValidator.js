@@ -4,7 +4,8 @@ const Joi = require('joi');
 const registerSchema =  Joi.object().keys({
     FirstName: Joi.string().trim().required(),
     LastName: Joi.string().trim().optional(),
-    Mobile: Joi.string().required(),
+    Mobile: Joi.string(),
+    Password:Joi.string(),
     EmailId: Joi.string().email().required(),
     CreatedDate: Joi.date().default(Date.now),
     UpdatedDate: Joi.date().default(Date.now),
