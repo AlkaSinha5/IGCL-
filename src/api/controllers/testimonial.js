@@ -15,7 +15,7 @@ cloudinary.config({
 exports.addtestimonial = async (req, res) => {
   try {
     const { Name, Message } = req.body;
- console.log(req.body)
+
     if (!req.files || !req.files.image) {
       return res
         .status(constants.status_code.header.server_error)
@@ -43,16 +43,29 @@ exports.addtestimonial = async (req, res) => {
 
 
 
-exports.getAlltestimonial= async (req, res) => {
+exports.getAlltestimonial = async (req, res) => {
   try {
-   
+    
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    const records = await Testimonial.find({IsDeleted: false});
+    const records = await Testimonial.find({ IsDeleted: false })
+      .skip(skip)
+      .limit(limit);
+
+    
+    const totalCount = await Testimonial.countDocuments({ IsDeleted: false });
+
+    const totalPages = Math.ceil(totalCount / limit);
+
     return res.status(constants.status_code.header.ok).send({
       statusCode: 200,
       data: records,
+      page,
+      totalPages,
+      totalCount,
       success: true,
-     
     });
   } catch (error) {
     res
@@ -60,6 +73,7 @@ exports.getAlltestimonial= async (req, res) => {
       .send({ statusCode: 500, error: error.message, success: false });
   }
 };
+
 
 exports.gettestimonialById = async (req, res) => {
   try {
