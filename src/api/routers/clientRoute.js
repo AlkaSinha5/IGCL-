@@ -12,6 +12,5 @@ router.patch('/updateClient/:id',updateClient)
 router.delete('/deleteClient/:id',deleteClient)
 
 
- 
 
 module.exports = router
