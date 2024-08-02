@@ -1,12 +1,12 @@
 const Joi = require('joi');
 
-const testimonialSchema =  Joi.object().keys({
+const clientSchema =  Joi.object().keys({
     Name: Joi.string(),
     Image: Joi.string(),
-    Message:Joi.string(),
+    Description:Joi.string(),
 
     })
 
     module.exports = {
-        testimonialSchema
+        clientSchema
     };
