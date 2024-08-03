@@ -51,6 +51,7 @@ exports.getAlltestimonial = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const records = await Testimonial.find({ IsDeleted: false })
+      .sort({ CreatedDate: -1 })
       .skip(skip)
       .limit(limit);
 

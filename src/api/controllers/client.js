@@ -50,6 +50,7 @@ exports.getAllClient = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const records = await Client.find({ IsDeleted: false })
+      .sort({ CreatedDate: -1 })
       .skip(skip)
       .limit(limit);
 
