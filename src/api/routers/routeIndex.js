@@ -7,6 +7,7 @@ const testimonialRoutes = require('./testimonial');
 const faqRoutes = require('./faqRoute');
 const clientRoutes = require('./clientRoute');
 const policyRoutes = require('./policy');
+const abstractRoutes = require('./abstract');
 
 const allRouters = express.Router();
 
@@ -17,6 +18,7 @@ allRouters.use("/testimonial", testimonialRoutes);
 allRouters.use("/faq", faqRoutes);
 allRouters.use("/client", clientRoutes);
 allRouters.use("/policy", policyRoutes);
+allRouters.use("/abstract", abstractRoutes);
 
 
 module.exports =  allRouters;
