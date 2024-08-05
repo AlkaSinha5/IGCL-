@@ -100,14 +100,25 @@ exports.getAbstractById = async (req, res) => {
 
 exports.updateAbstract = async (req, res) => {
   try {
-    const abstract = await Abstract.findByIdAndUpdate(req.params.id, req.body, {
+    const { PolicyId } = req.body;
+    let updateData = { PolicyId };
+
+    if (req.files && req.files.pdf) {
+      const file = req.files.pdf;
+      const result = await cloudinary.uploader.upload(file.tempFilePath);
+      updateData.PDF = result.secure_url;
+    }
+
+    const abstract = await Abstract.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
     });
+   
     if (!abstract) {
       return res
         .status(404)
         .json({ error: "Abstract not found", success: false });
     }
+
     res
       .status(constants.status_code.header.ok)
       .send({ statusCode: 200, message: constants.curd.update, success: true });

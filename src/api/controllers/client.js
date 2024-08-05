@@ -95,6 +95,13 @@ exports.getClientById = async (req, res) => {
 
 exports.updateClient = async (req, res) => {
   try {
+    let updateData = { ...req.body };
+
+    if (req.files && req.files.image) {
+      const file = req.files.image;
+      const result = await cloudinary.uploader.upload(file.tempFilePath);
+      updateData.Image= result.secure_url;
+    }
     const client = await Client.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
