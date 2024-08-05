@@ -8,6 +8,8 @@ const faqRoutes = require('./faqRoute');
 const clientRoutes = require('./clientRoute');
 const policyRoutes = require('./policy');
 const abstractRoutes = require('./abstract');
+const notificationRoutes = require('./notification');
+const judgementRoutes = require('./judgement ');
 
 const allRouters = express.Router();
 
@@ -19,6 +21,7 @@ allRouters.use("/faq", faqRoutes);
 allRouters.use("/client", clientRoutes);
 allRouters.use("/policy", policyRoutes);
 allRouters.use("/abstract", abstractRoutes);
-
+allRouters.use("/notification", notificationRoutes);
+allRouters.use("/judgement", judgementRoutes);
 
 module.exports =  allRouters;
