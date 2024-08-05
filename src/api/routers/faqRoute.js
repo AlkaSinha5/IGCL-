@@ -3,13 +3,13 @@ const router = express.Router()
 const { validate } = require('../../helper/customValidation');
 const { FAQSchema } = require('../validators/faq');
 const { addFAQ, getAllFAQ, getFAQById, updateFAQ, deleteFAQ } = require('../controllers/faq');
+const auth = require('../middleware/auth');
 
-
-router.post('/add',validate(FAQSchema,'body'),addFAQ)
+router.post('/add',auth,validate(FAQSchema,'body'),addFAQ)
 router.get('/allFAQ',getAllFAQ)
-router.get('/FAQById/:id',getFAQById)
-router.patch('/updateFAQ/:id',updateFAQ)
-router.delete('/deleteFAQ/:id',deleteFAQ)
+router.get('/FAQById/:id',auth,getFAQById)
+router.patch('/updateFAQ/:id',auth,updateFAQ)
+router.delete('/deleteFAQ/:id',auth,deleteFAQ)
 
 
  
