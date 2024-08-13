@@ -10,6 +10,7 @@ const policyRoutes = require('./policy');
 const abstractRoutes = require('./abstract');
 const notificationRoutes = require('./notification');
 const judgementRoutes = require('./judgement ');
+const kycRoutes = require('./kyc');
 
 const allRouters = express.Router();
 
@@ -23,5 +24,6 @@ allRouters.use("/policy", policyRoutes);
 allRouters.use("/abstract", abstractRoutes);
 allRouters.use("/notification", notificationRoutes);
 allRouters.use("/judgement", judgementRoutes);
+allRouters.use("/kyc", kycRoutes);
 
 module.exports =  allRouters;
