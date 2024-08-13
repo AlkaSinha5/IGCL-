@@ -10,7 +10,7 @@ const kycSchema = new mongoose.Schema({
         required: true 
     },
     State: {
-        type: String,
+        type: [String],
         required: true 
     },
     Other: {
