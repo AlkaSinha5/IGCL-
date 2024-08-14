@@ -21,8 +21,8 @@ const kycSchema = new mongoose.Schema({
         type: String,
         required: true 
     },
-    To: {
-        type: String,
+    TypeOfIndustry: {
+        type: [String],
         required: true 
     },
     CreatedDate: {
