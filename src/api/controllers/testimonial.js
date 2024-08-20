@@ -96,23 +96,40 @@ exports.gettestimonialById = async (req, res) => {
 
 exports.updatetestimonial = async (req, res) => {
   try {
-    const testimonial = await Testimonial.findByIdAndUpdate(req.params.id, req.body, {
+    const { id } = req.params;
+    const { Name, Message } = req.body;
+    
+    let updatedData = {
+      Name,
+      Message,
+    };
+
+    if (req.files && req.files.image) {
+      const file = req.files.image;
+      const result = await cloudinary.uploader.upload(file.tempFilePath);
+      updatedData.Image = result.secure_url;
+    }
+
+    const testimonial = await Testimonial.findByIdAndUpdate(id, updatedData, {
       new: true,
     });
+
     if (!testimonial) {
       return res
-        .status(404)
-        .json({ error: "testimonial not found", success: false });
+        .status(constants.status_code.header.not_found)
+        .send({ error: "Testimonial not found", success: false });
     }
-    res
+
+    return res
       .status(constants.status_code.header.ok)
-      .send({ statusCode: 200, message: constants.curd.update, success: true });
+      .send({ message: "Testimonial updated successfully", success: true, data: testimonial });
   } catch (error) {
     return res
       .status(constants.status_code.header.server_error)
-      .send({ statusCode: 500, error: error.message, success: false });
+      .send({ error: error.message, success: false });
   }
 };
+
 
 exports.deletetestimonial = async (req, res) => {
   try {
