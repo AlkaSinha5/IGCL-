@@ -95,28 +95,37 @@ exports.getClientById = async (req, res) => {
 
 exports.updateClient = async (req, res) => {
   try {
-    let updateData = { ...req.body };
+    const { id } = req.params;
+    const { Name, Description } = req.body;
+    
+    let updatedData = {
+      Name,
+      Description,
+    };
 
     if (req.files && req.files.image) {
       const file = req.files.image;
       const result = await cloudinary.uploader.upload(file.tempFilePath);
-      updateData.Image= result.secure_url;
+      updatedData.Image = result.secure_url;
     }
-    const client = await Client.findByIdAndUpdate(req.params.id, req.body, {
+
+    const client = await Client.findByIdAndUpdate(id, updatedData, {
       new: true,
     });
+
     if (!client) {
       return res
-        .status(404)
-        .json({ error: "Client not found", success: false });
+        .status(constants.status_code.header.not_found)
+        .send({ error: "Client not found", success: false });
     }
-    res
+
+    return res
       .status(constants.status_code.header.ok)
-      .send({ statusCode: 200, message: constants.curd.update, success: true });
+      .send({ message: "Client updated successfully", success: true, data: client });
   } catch (error) {
     return res
       .status(constants.status_code.header.server_error)
-      .send({ statusCode: 500, error: error.message, success: false });
+      .send({ error: error.message, success: false });
   }
 };
 
