@@ -1,13 +1,17 @@
 const constants = require("../../helper/constants");
 const Policy = require("../../models/policy");
-const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
+const path = require('path');
+const { promisify } = require('util');
+const unlinkAsync = promisify(fs.unlink);
 
-// Ensure you have set up your Cloudinary configuration
-cloudinary.config({
-  cloud_name: "dhzk0ztrn",
-  api_key: "571339484391153",
-  api_secret: "WWmOJpVF5y02r7Blu2oAr0RxbU0",
-});
+// Directory where PDFs will be stored
+const uploadDir = path.join(__dirname, '../../uploads/pdfs');
+
+// Ensure the directory exists
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 exports.addPolicy = async (req, res) => {
   try {
@@ -18,7 +22,7 @@ exports.addPolicy = async (req, res) => {
       NotificationTitle,
       NotificationDescription,
     } = req.body;
-console.log(req.body)
+
     if (!req.files || !req.files.pdf) {
       return res
         .status(constants.status_code.header.server_error)
@@ -26,13 +30,16 @@ console.log(req.body)
     }
 
     const file = req.files.pdf;
-    const result = await cloudinary.uploader.upload(file.tempFilePath, {
-      resource_type: "raw", // Ensure the file is treated as a raw file, not an image
-    });
+    const fileName = `${Date.now()}_${file.name}`;
+    const filePath = path.join(uploadDir, fileName);
 
+    // Save the PDF to the local filesystem
+    await file.mv(filePath);
+
+    // Create the policy record in the database
     const policy = await Policy.create({
       PolicyName,
-      PDF: result.secure_url,
+      PDF: fileName, // Store the file name in the database
       JudgmentTitle,
       JudgmentDescription,
       NotificationTitle,
@@ -41,13 +48,21 @@ console.log(req.body)
 
     return res
       .status(constants.status_code.header.ok)
-      .send({ message: constants.curd.add, success: true, data: policy });
+      .send({
+        message: constants.curd.add,
+        success: true,
+        // data: {
+        //   policy,
+        //   downloadLink: `/download/${policy._id}`, // Provide the download link
+        // },
+      });
   } catch (error) {
     return res
       .status(constants.status_code.header.server_error)
       .send({ error: error.message, success: false });
   }
 };
+
 
 exports.getAllPolicy = async (req, res) => {
   try {
