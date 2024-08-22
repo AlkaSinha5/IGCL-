@@ -55,10 +55,7 @@ exports.addPolicy = async (req, res) => {
       .send({
         message: constants.curd.add,
         success: true,
-        // data: {
-        //   policy,
-        //   downloadLink: result.secure_url, // Provide the download link
-        // },
+        data: policy, // Return the saved policy without the download link
       });
   } catch (error) {
     return res
@@ -173,10 +170,7 @@ exports.updatePolicy = async (req, res) => {
     return res.status(constants.status_code.header.ok).send({
       message: "Policy updated successfully",
       success: true,
-      data: {
-        policy,
-        downloadLink: policy.PDF, // Provide the download link
-      },
+      data: policy, // Return the updated policy without the download link
     });
   } catch (error) {
     return res
