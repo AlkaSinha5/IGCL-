@@ -4,14 +4,14 @@ const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');
 const unlinkAsync = promisify(fs.unlink);
+const cloudinary = require('cloudinary').v2; // Import Cloudinary
 
-// Directory where PDFs will be stored
-const uploadDir = path.join(__dirname, '../../uploads/pdfs');
-
-// Ensure the directory exists
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: "dhzk0ztrn",
+  api_key: "571339484391153",
+  api_secret: "WWmOJpVF5y02r7Blu2oAr0RxbU0",
+});
 
 exports.addPolicy = async (req, res) => {
   try {
@@ -30,21 +30,25 @@ exports.addPolicy = async (req, res) => {
     }
 
     const file = req.files.pdf;
-    const fileName = `${Date.now()}_${file.name}`;
-    const filePath = path.join(uploadDir, fileName);
 
-    // Save the PDF to the local filesystem
-    await file.mv(filePath);
+    // Upload the PDF to Cloudinary
+    const result = await cloudinary.uploader.upload(file.tempFilePath, {
+      folder: 'policies', // You can set a folder in Cloudinary
+      resource_type: 'raw' // Important for non-image files like PDFs
+    });
 
     // Create the policy record in the database
     const policy = await Policy.create({
       PolicyName,
-      PDF: fileName, // Store the file name in the database
+      PDF: result.secure_url, // Store the file URL in the database
       JudgmentTitle,
       JudgmentDescription,
       NotificationTitle,
       NotificationDescription,
     });
+
+    // Delete the temporary file
+    await unlinkAsync(file.tempFilePath);
 
     return res
       .status(constants.status_code.header.ok)
@@ -53,7 +57,7 @@ exports.addPolicy = async (req, res) => {
         success: true,
         // data: {
         //   policy,
-        //   downloadLink: `/download/${policy._id}`, // Provide the download link
+        //   downloadLink: result.secure_url, // Provide the download link
         // },
       });
   } catch (error) {
@@ -62,7 +66,6 @@ exports.addPolicy = async (req, res) => {
       .send({ error: error.message, success: false });
   }
 };
-
 
 exports.getAllPolicy = async (req, res) => {
   try {
@@ -131,12 +134,29 @@ exports.updatePolicy = async (req, res) => {
       NotificationDescription,
     };
 
+    // Check if a new PDF file is uploaded
     if (req.files && req.files.pdf) {
       const file = req.files.pdf;
+
+      // Upload the new PDF to Cloudinary
       const result = await cloudinary.uploader.upload(file.tempFilePath, {
-        resource_type: "raw",
+        folder: 'policies',
+        resource_type: 'raw' // Important for non-image files like PDFs
       });
+
+      // Delete the old PDF from Cloudinary if it exists
+      const policy = await Policy.findById(id);
+      if (policy && policy.PDF) {
+        const oldPublicId = policy.PDF.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`policies/${oldPublicId}`, {
+          resource_type: 'raw'
+        });
+      }
+
       updatedData.PDF = result.secure_url;
+
+      // Delete the temporary file
+      await unlinkAsync(file.tempFilePath);
     }
 
     const policy = await Policy.findByIdAndUpdate(id, updatedData, {
@@ -153,7 +173,10 @@ exports.updatePolicy = async (req, res) => {
     return res.status(constants.status_code.header.ok).send({
       message: "Policy updated successfully",
       success: true,
-      data: policy,
+      data: {
+        policy,
+        downloadLink: policy.PDF, // Provide the download link
+      },
     });
   } catch (error) {
     return res
